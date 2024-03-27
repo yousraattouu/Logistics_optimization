@@ -1,4 +1,3 @@
-##Reinforcement Learning
 Reinforcement Learning (RL) is a type of machine learning technique where an agent learns to make decisions by 
 interacting with an environment. The agent learns from the consequences of its actions, receiving feedback in the form 
 of rewards or penalties. The objective in reinforcement learning is for the agent to learn a policy, which is a mapping
