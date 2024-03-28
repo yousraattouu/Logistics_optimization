@@ -12,19 +12,19 @@ import seaborn as sns
 
 sns.set_style("dark") #définir le style des graphiques produits par Seaborn
 import sys
-sys.path.append("C:/Users/HP/PycharmProjects/OSIL")
+sys.path.append("C:/Users/HP/PycharmProjects/Logistics optimization")
 
 from q_agent import DeliveryQAgent
 class DeliveryEnvironment(object):
-    def __init__(self, n_arrets=10, max_box=10, method="distance", **kwargs):
+    def __init__(self, n_stops=10, max_box=10, method="distance", **kwargs):
 
-        print(f"Initialized Delivery Environment with {n_arrets} random stops")
+        print(f"Initialized Delivery Environment with {n_stops} random stops")
         print(f"Target metric for optimization is {method}")
 
         # Initialization
-        self.n_arrets = n_arrets
-        self.action_space = self.n_arrets
-        self.observation_space = self.n_arrets
+        self.n_stops = n_stops
+        self.action_space = self.n_stops
+        self.observation_space = self.n_stops
         self.max_box = max_box
         self.stops = []
         self.method = method
@@ -55,7 +55,7 @@ class DeliveryEnvironment(object):
         if self.method == "traffic_box":
 
             points = []
-            while len(points) < self.n_arrets:
+            while len(points) < self.n_stops:
                 x, y = np.random.rand(2) * self.max_box
                 if not self._is_in_box(x, y, self.box):
                     points.append((x, y))
@@ -64,7 +64,7 @@ class DeliveryEnvironment(object):
 
         else:
             # Generate geographical coordinates
-            xy = np.random.rand(self.n_arrets, 2) * self.max_box
+            xy = np.random.rand(self.n_stops, 2) * self.max_box
 
         self.x = xy[:, 0]
         self.y = xy[:, 1]
@@ -74,10 +74,10 @@ class DeliveryEnvironment(object):
         # Generate actual Q Values corresponding to time elapsed between two points
         if self.method in ["distance", "traffic_box"]:
             xy = np.column_stack([self.x, self.y])
-            self.q_arrets = cdist(xy, xy)
+            self.q_stops = cdist(xy, xy)
         elif self.method == "time":
-            self.q_arrets = np.random.rand(self.n_arrets, self.n_arrets) * self.max_box
-            np.fill_diagonal(self.q_arrets, 0)
+            self.q_stops = np.random.rand(self.n_stops, self.n_stops) * self.max_box
+            np.fill_diagonal(self.q_stops, 0)
         else:
             raise Exception("Method not recognized")
 
@@ -132,7 +132,7 @@ class DeliveryEnvironment(object):
         self.stops = []
 
         # Random first stop
-        first_stop = np.random.randint(self.n_arrets)
+        first_stop = np.random.randint(self.n_stops)
         self.stops.append(first_stop)
 
         return first_stop
@@ -148,7 +148,7 @@ class DeliveryEnvironment(object):
 
         # Append new_state to stops
         self.stops.append(destination)
-        done = len(self.stops) == self.n_arrets
+        done = len(self.stops) == self.n_stops
 
         return new_state, reward, done
 
@@ -162,7 +162,7 @@ class DeliveryEnvironment(object):
         return x, y
 
     def _get_reward(self, state, new_state):
-        base_reward = self.q_arrets[state, new_state]
+        base_reward = self.q_stops[state, new_state]
 
         if self.method == "distance":
             return base_reward
